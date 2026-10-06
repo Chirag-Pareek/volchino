@@ -17,12 +17,12 @@ from server.audio import stt, tts
 from server.config import Settings
 from server.hub import Hub
 from server.llm.groq import GroqClient
-from server.llm.opencode import OpenCodeStub
 from server.pet import PetService
 from server.pipeline.cache import Cache
 from server.pipeline.executor import Executor
 from server.pipeline.pipeline import Pipeline
 from server.pipeline.router import GroqRouter
+from server.reasoning.opencode import OpenCodeReasoningClient
 from server.tools import REGISTRY, DryRunRunner, SubprocessRunner, ToolContext
 
 log = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if settings.groq_api_key:
             groq_client = GroqClient(settings.groq_api_key, settings.groq_model)
         router = GroqRouter(groq_client, cache, REGISTRY)
-        proposer = OpenCodeStub()
+        proposer = OpenCodeReasoningClient(api_key=settings.opencode_api_key)
 
         pipeline = Pipeline(
             db=database,
@@ -122,6 +122,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                         continue
                     outcome = await pipeline.run(text)
                     await hub.send(ws, outcome.result_message())
+                    if outcome.skill_proposal:
+                        await hub.send(
+                            ws,
+                            {
+                                "type": "skill_proposal",
+                                "name": outcome.skill_proposal["name"],
+                                "steps": outcome.skill_proposal.get("steps", []),
+                                "description": outcome.skill_proposal.get("description", ""),
+                            },
+                        )
                     if outcome.pending:
                         await hub.send(
                             ws,
@@ -134,6 +144,34 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                         )
                 elif msg_type == "audio_chunk":
                     await _handle_audio(ws, msg, s)
+                elif msg_type == "approve_skill":
+                    from server.skills.engine import approve_skill
+
+                    skill_name = (msg.get("name") or "").strip()
+                    ok = await approve_skill(s["db"], skill_name)
+                    if ok:
+                        await hub.send(
+                            ws,
+                            {
+                                "type": "result",
+                                "text": f"Skill '{skill_name}' approved and active at 0 tokens.",
+                                "status": "success",
+                                "stage": "skills",
+                                "tool": None,
+                                "tokens_used": 0,
+                            },
+                        )
+                    else:
+                        await hub.send(
+                            ws,
+                            {
+                                "type": "error",
+                                "text": (
+                                    f"Skill '{skill_name}' could not be approved "
+                                    "(not found or already approved)."
+                                ),
+                            },
+                        )
                 elif msg_type == "confirm":
                     pending_id = msg.get("id", "")
                     approved = bool(msg.get("approved"))
@@ -202,6 +240,16 @@ async def _handle_audio(ws: WebSocket, msg: dict[str, Any], s: dict[str, Any]) -
     # Run through the pipeline
     outcome = await pipeline.run(transcript)
     await hub.send(ws, outcome.result_message())
+    if outcome.skill_proposal:
+        await hub.send(
+            ws,
+            {
+                "type": "skill_proposal",
+                "name": outcome.skill_proposal["name"],
+                "steps": outcome.skill_proposal.get("steps", []),
+                "description": outcome.skill_proposal.get("description", ""),
+            },
+        )
 
     if outcome.pending:
         await hub.send(

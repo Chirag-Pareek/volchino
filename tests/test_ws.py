@@ -113,3 +113,40 @@ def test_ws_roundtrip_unknown_falls_to_draft(client, settings):
         assert result is not None
         # Should produce a draft skill and request approval
         assert "draft" in result["text"].lower() or result["status"] == "pending_confirmation"
+
+
+def test_ws_approve_skill(client, settings):
+    with client.websocket_connect(f"/ws?token={settings.auth_token}") as ws:
+        ws.receive_json()  # pet
+
+        # First trigger an unknown command that creates a draft skill and skill_proposal
+        ws.send_json({"type": "text", "text": "start morning coffee routine"})
+        draft_name = None
+        has_proposal = False
+
+        for _ in range(10):
+            msg = ws.receive_json()
+            if msg["type"] == "skill_proposal":
+                has_proposal = True
+                draft_name = msg["name"]
+            elif msg["type"] == "confirm" and msg.get("kind") == "approve_skill":
+                if not draft_name:
+                    draft_name = msg.get("action", "").split("'")[1]
+            if has_proposal and draft_name:
+                break
+
+        assert has_proposal is True
+        assert draft_name is not None
+
+        # Now send approve_skill message
+        ws.send_json({"type": "approve_skill", "name": draft_name})
+        result = None
+        for _ in range(5):
+            msg = ws.receive_json()
+            if msg["type"] == "result":
+                result = msg
+                break
+
+        assert result is not None
+        assert result["status"] == "success"
+        assert "approved" in result["text"].lower()

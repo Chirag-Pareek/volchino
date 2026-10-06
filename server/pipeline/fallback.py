@@ -1,7 +1,4 @@
-"""Stage 6: heavy-reasoning fallback. Produces a DRAFT skill that needs user approval.
-
-TODO(phase-5+): the proposer is currently ``OpenCodeStub``; see server/llm/opencode.py.
-"""
+"""Stage 6: heavy-reasoning fallback. Produces a DRAFT skill that needs user approval."""
 
 from __future__ import annotations
 
@@ -30,6 +27,15 @@ async def handle(
     draft.steps = [s for s in draft.steps if isinstance(s, dict) and s.get("tool") in registry]
     draft.required_tools = sorted({s["tool"] for s in draft.steps})
     name = await skills.save_draft(db, draft)
+
+    proposal = {
+        "name": name,
+        "description": draft.description,
+        "trigger": draft.trigger,
+        "steps": draft.steps,
+        "required_tools": draft.required_tools,
+    }
+
     pending = PendingAction(
         kind="approve_skill",
         action=f"Approve draft skill '{name}'? ({len(draft.steps)} step(s): "
@@ -37,9 +43,10 @@ async def handle(
         user_input=user_input,
         text=text,
         skill_name=name,
+        skill_proposal=proposal,
     )
     return Outcome(
-        text=f"I don't know how to do that yet. I saved a draft skill '{name}' — it won't run "
+        text=f"I don't know how to do that yet. I saved a draft skill '{name}' -- it won't run "
         "until you approve it.",
         stage="fallback",
         intent="needs_reasoning",
@@ -47,4 +54,5 @@ async def handle(
         tokens_used=tokens_so_far + draft.tokens_used,
         status="pending_confirmation",
         pending=pending,
+        skill_proposal=proposal,
     )

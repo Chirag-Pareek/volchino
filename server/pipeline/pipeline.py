@@ -18,7 +18,7 @@ from server.pipeline.cache import Cache
 from server.pipeline.executor import Executor
 from server.pipeline.normalize import normalize
 from server.pipeline.router import GroqRouter
-from server.pipeline.types import Outcome, PendingAction, Plan
+from server.pipeline.types import Outcome, PendingAction, Plan, ToolCall
 from server.tools.base import Tool
 
 log = logging.getLogger(__name__)
@@ -148,6 +148,27 @@ class Pipeline:
                     [routed.call], stage="router", intent=routed.call.tool, tokens_used=tokens
                 )
                 return await self._dispatch(raw, text, plan)
+            if getattr(routed, "skill_name", None):
+                from server.skills.engine import get_skill
+
+                s = await get_skill(self.db, routed.skill_name)
+                if s and s.get("status") == "approved":
+                    steps = s.get("steps", [])
+                    calls = [
+                        ToolCall(st["tool"], st.get("args", {}))
+                        for st in steps
+                        if isinstance(st, dict) and "tool" in st
+                    ]
+                    if calls:
+                        plan = Plan(
+                            calls=calls,
+                            stage="skill",
+                            intent=f"skill:{routed.skill_name}",
+                            skill_name=routed.skill_name,
+                            tokens_used=tokens,
+                            skill_requires_confirmation=s.get("permissions") != "safe",
+                        )
+                        return await self._dispatch(raw, text, plan)
 
         outcome = await fallback.handle(
             self.db, self.proposer, self.registry, user_input=raw, text=text, tokens_so_far=tokens

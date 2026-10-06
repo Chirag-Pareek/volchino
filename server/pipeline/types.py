@@ -37,6 +37,7 @@ class PendingAction:
     text: str
     plan: Plan | None = None
     skill_name: str | None = None
+    skill_proposal: dict[str, Any] | None = None
     id: str = field(default_factory=lambda: uuid.uuid4().hex)
     created: float = field(default_factory=time.monotonic)
 
@@ -54,6 +55,7 @@ class Outcome:
     args: dict[str, Any] = field(default_factory=dict)
     tokens_used: int = 0
     pending: PendingAction | None = None
+    skill_proposal: dict[str, Any] | None = None
 
     def result_message(self) -> dict[str, Any]:
         return {

@@ -104,11 +104,14 @@ The OpenCode fallback is a stub that saves a draft skill -- it never executes un
 
 ## What is verified
 
-- [x] 79 pytest tests pass (auth, permissions, normalize, cache TTL, deterministic regex, tool arg validation, router parsing, WebSocket round-trip, STT PCM/WAV transcription, edge-tts/pyttsx3 synthesis, WS audio_chunk voice loop)
+- [x] 90 pytest tests pass (auth, permissions, normalize, cache TTL, deterministic regex, tool arg validation, router parsing, WebSocket round-trip, STT PCM/WAV transcription, edge-tts/pyttsx3 synthesis, WS audio_chunk voice loop, Phase 5 multi-tier routing, draft skill protection, dynamic skill approval, preference context)
 - [x] WS round-trip: "volume 30%", "open firefox", "what's my work time today" all return tokens_used=0
 - [x] WS voice loop: `audio_chunk` PCM -> faster-whisper STT -> pipeline -> TTS -> `voice_response`
+- [x] Multi-Tier Router: Tier 1 (Cache), Tier 2 (Memory), Tier 3 (Learned Skills), Tier 4 (Deterministic Regex), Tier 5 (Groq Router), Tier 6 (OpenCode Reasoning)
+- [x] Self-Learning Skills: draft persistence, WS `skill_proposal` notification, dynamic `approve_skill` approval
 - [x] Auth rejection: wrong/missing token -> connection closed
 - [x] Unknown requests fall through to draft skill creation
+- [x] Router benchmark: `scripts/benchmark_router.py` verifies 0-token tiers and sub-millisecond execution
 - [x] ruff check and ruff format clean
 
 ## What needs real-environment testing
@@ -116,7 +119,8 @@ The OpenCode fallback is a stub that saves a draft skill -- it never executes un
 - [ ] Hyprland tools (hyprctl dispatch) -- need a live Hyprland session
 - [ ] wpctl (volume), grim (screenshot) -- need PipeWire + Wayland
 - [ ] Battery status -- need /sys/class/power_supply/BAT*
-- [ ] Groq router -- needs GROQ_API_KEY
+- [ ] Live Groq router -- needs live GROQ_API_KEY
+- [ ] Live OpenCode Go API -- needs live OPENCODE_API_KEY
 - [ ] Tailscale HTTPS proxy -- needs Tailscale setup
 - [ ] PWA install on Android Chrome -- needs the phone
 - [ ] systemd --user service -- needs the systemd user session
