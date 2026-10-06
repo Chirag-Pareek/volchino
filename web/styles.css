@@ -45,8 +45,10 @@ html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var
 #input-bar{display:flex;gap:6px;padding:6px 0 max(env(safe-area-inset-bottom),6px)}
 #input{flex:1;padding:8px 12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.92rem;outline:none}
 #input:focus{border-color:var(--accent)}
-#send-btn,#mic-btn{width:40px;border:none;border-radius:var(--radius);background:var(--surface);color:var(--accent);font-size:1.2rem;cursor:pointer;border:1px solid var(--border)}
+#send-btn,#mic-btn{width:40px;border:none;border-radius:var(--radius);background:var(--surface);color:var(--accent);font-size:.82rem;cursor:pointer;border:1px solid var(--border);font-weight:600;user-select:none;-webkit-user-select:none}
 #mic-btn:disabled{opacity:.35;cursor:default}
+#mic-btn.recording{background:var(--err);color:#fff;border-color:var(--err);animation:pulse .8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 #send-btn:active{background:var(--accent);color:#000}
 
 /* scrollbar */

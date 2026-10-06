@@ -104,8 +104,9 @@ The OpenCode fallback is a stub that saves a draft skill -- it never executes un
 
 ## What is verified
 
-- [x] 61 pytest tests pass (auth, permissions, normalize, cache TTL, deterministic regex, tool arg validation, router parsing, WebSocket round-trip)
+- [x] 79 pytest tests pass (auth, permissions, normalize, cache TTL, deterministic regex, tool arg validation, router parsing, WebSocket round-trip, STT PCM/WAV transcription, edge-tts/pyttsx3 synthesis, WS audio_chunk voice loop)
 - [x] WS round-trip: "volume 30%", "open firefox", "what's my work time today" all return tokens_used=0
+- [x] WS voice loop: `audio_chunk` PCM -> faster-whisper STT -> pipeline -> TTS -> `voice_response`
 - [x] Auth rejection: wrong/missing token -> connection closed
 - [x] Unknown requests fall through to draft skill creation
 - [x] ruff check and ruff format clean
@@ -119,4 +120,3 @@ The OpenCode fallback is a stub that saves a draft skill -- it never executes un
 - [ ] Tailscale HTTPS proxy -- needs Tailscale setup
 - [ ] PWA install on Android Chrome -- needs the phone
 - [ ] systemd --user service -- needs the systemd user session
-- [ ] Phase 4 voice loop (mic, wake word, STT, TTS) -- stubbed with TODOs

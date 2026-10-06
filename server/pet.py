@@ -158,6 +158,21 @@ class PetService:
         await self.push()
         return True
 
+    async def transition_safe(self, dst: str | PetState) -> bool:
+        """Like ``transition`` but never raises -- silently returns False on invalid moves.
+
+        Accepts a string state name for convenience from the WS handler.
+        """
+        if isinstance(dst, str):
+            try:
+                dst = PetState(dst)
+            except ValueError:
+                return False
+        try:
+            return await self.transition(dst, force=True)
+        except InvalidTransition:
+            return False
+
     async def wake(self) -> None:
         """App opened / screen on, or a new request arrived: get to IDLE."""
         st = await self.state()

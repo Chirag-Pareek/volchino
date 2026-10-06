@@ -50,6 +50,12 @@ class Settings:
     pet_success_timeout_s: float = 3.0
     pet_sleep_after_s: float = 30 * 60
     tool_timeout_s: float = 10.0
+    # Phase 4 — voice
+    stt_engine: str = "faster-whisper"
+    stt_model: str = "base.en"
+    tts_engine: str = "edge-tts"
+    tts_voice: str = "en-US-ChristopherNeural"
+    wake_word: str = "wake up"
 
     @classmethod
     def from_env(cls, env_file: str | os.PathLike[str] | None = None) -> Settings:
@@ -79,4 +85,9 @@ class Settings:
             vault_path=Path(vault_raw).expanduser() if vault_raw else None,
             default_workspace=_int("DEFAULT_WORKSPACE", 1),
             dry_run=_bool("VOLCHINO_DRY_RUN"),
+            stt_engine=os.environ.get("STT_ENGINE", "").strip() or "faster-whisper",
+            stt_model=os.environ.get("STT_MODEL", "").strip() or "base.en",
+            tts_engine=os.environ.get("TTS_ENGINE", "").strip() or "edge-tts",
+            tts_voice=os.environ.get("TTS_VOICE", "").strip() or "en-US-ChristopherNeural",
+            wake_word=os.environ.get("WAKE_WORD", "").strip() or "wake up",
         )

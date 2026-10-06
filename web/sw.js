@@ -1,6 +1,6 @@
 /* Volchino service worker — offline cache-first for app shell, network-first for /ws & /health */
-const CACHE_NAME = 'volchino-v1';
-const SHELL = ['/', '/styles.css', '/avatar.js', '/app.js', '/manifest.json',
+var CACHE_NAME = 'volchino-v2';
+var SHELL = ['/', '/styles.css', '/avatar.js', '/voice.js', '/app.js', '/manifest.json',
                '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {

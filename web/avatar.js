@@ -239,7 +239,7 @@ class CyberCat {
     return {
       sleeping: null, idle: null, listening: COLORS.accent,
       thinking: COLORS.warn, working: COLORS.accent,
-      success: COLORS.ok, error: COLORS.err,
+      success: COLORS.ok, error: COLORS.err, speaking: COLORS.ok,
     }[this.state] || null;
   }
 
@@ -247,7 +247,7 @@ class CyberCat {
     return {
       sleeping: '~ sleeping', idle: null, listening: ')) listening',
       thinking: '.. thinking', working: '>> working',
-      success: '[ok] done!', error: '[!] error',
+      success: '[ok] done!', error: '[!] error', speaking: '<< speaking',
     }[this.state] || null;
   }
 }

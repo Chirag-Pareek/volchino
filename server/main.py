@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import logging
 from contextlib import asynccontextmanager
@@ -12,6 +13,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from server import auth, db
+from server.audio import stt, tts
 from server.config import Settings
 from server.hub import Hub
 from server.llm.groq import GroqClient
@@ -71,7 +73,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
         app.state.volchino = state
         log.info(
-            "Volchino agent started (dry_run=%s, groq=%s)", settings.dry_run, bool(groq_client)
+            "Volchino agent started (dry_run=%s, groq=%s, stt=%s, tts=%s)",
+            settings.dry_run,
+            bool(groq_client),
+            settings.stt_engine,
+            settings.tts_engine,
         )
         yield
         await pet.close()
@@ -89,16 +95,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.websocket("/ws")
     async def websocket_endpoint(ws: WebSocket, token: str = Query("")):
         s: dict[str, Any] = app.state.volchino
-        if not auth.token_valid(token, s["settings"].auth_token):
+        cfg: Settings = s["settings"]
+        if not auth.token_valid(token, cfg.auth_token):
             await ws.close(code=4001, reason="unauthorized")
             return
         await ws.accept()
         hub: Hub = s["hub"]
         pipeline: Pipeline = s["pipeline"]
         pet: PetService = s["pet"]
+        await pet.wake()
         await hub.add(ws)
         try:
-            await pet.wake()
             snap = await pet.snapshot()
             await hub.send(ws, snap)
             while True:
@@ -125,6 +132,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                                 "kind": outcome.pending.kind,
                             },
                         )
+                elif msg_type == "audio_chunk":
+                    await _handle_audio(ws, msg, s)
                 elif msg_type == "confirm":
                     pending_id = msg.get("id", "")
                     approved = bool(msg.get("approved"))
@@ -150,3 +159,76 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.mount("/", StaticFiles(directory=str(settings.web_dir), html=True), name="web")
 
     return app
+
+
+async def _handle_audio(ws: WebSocket, msg: dict[str, Any], s: dict[str, Any]) -> None:
+    """Process an incoming audio_chunk: STT -> pipeline -> TTS -> voice_response."""
+    hub: Hub = s["hub"]
+    pipeline: Pipeline = s["pipeline"]
+    pet: PetService = s["pet"]
+    cfg: Settings = s["settings"]
+
+    data_b64 = msg.get("data", "")
+    if not data_b64:
+        await hub.send(ws, {"type": "error", "text": "Empty audio data."})
+        return
+
+    try:
+        pcm_bytes = base64.b64decode(data_b64)
+    except Exception:
+        await hub.send(ws, {"type": "error", "text": "Invalid base64 audio data."})
+        return
+
+    # Pet -> listening while we transcribe
+    await pet.transition_safe("listening")
+
+    # STT
+    try:
+        transcript = await stt.transcribe_pcm(pcm_bytes, model_size=cfg.stt_model)
+    except Exception:
+        log.exception("STT failed")
+        await hub.send(ws, {"type": "error", "text": "Speech recognition failed."})
+        await pet.transition_safe("error")
+        return
+
+    if not transcript.strip():
+        await hub.send(ws, {"type": "error", "text": "Could not understand the audio."})
+        await pet.transition_safe("idle")
+        return
+
+    # Send the transcript so the client can show what was heard
+    await hub.send(ws, {"type": "transcript", "text": transcript})
+
+    # Run through the pipeline
+    outcome = await pipeline.run(transcript)
+    await hub.send(ws, outcome.result_message())
+
+    if outcome.pending:
+        await hub.send(
+            ws,
+            {
+                "type": "confirm",
+                "id": outcome.pending.id,
+                "action": outcome.pending.action,
+                "kind": outcome.pending.kind,
+            },
+        )
+        return  # wait for user to confirm before TTS
+
+    # TTS
+    try:
+        audio_b64, audio_fmt = await tts.synthesize_b64(outcome.text, voice=cfg.tts_voice)
+    except Exception:
+        log.exception("TTS failed")
+        audio_b64, audio_fmt = "", "audio/mp3"
+
+    await hub.send(
+        ws,
+        {
+            "type": "voice_response",
+            "text": outcome.text,
+            "audio": audio_b64,
+            "format": audio_fmt,
+            "tool": outcome.tool or "",
+        },
+    )
