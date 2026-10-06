@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Volchino</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <div id="pet-info">
+        <span id="pet-name">Volchino</span>
+        <span id="pet-mood" class="badge">…</span>
+        <span id="pet-stage" class="badge dim">…</span>
+      </div>
+      <div id="connection-status" class="badge disconnected">offline</div>
+    </header>
+
+    <canvas id="avatar" width="280" height="280"></canvas>
+
+    <section id="chat-log" aria-live="polite"></section>
+
+    <div id="confirm-bar" class="hidden">
+      <p id="confirm-text"></p>
+      <div class="confirm-actions">
+        <button id="confirm-yes" class="btn btn-ok">Approve</button>
+        <button id="confirm-no" class="btn btn-cancel">Decline</button>
+      </div>
+    </div>
+
+    <form id="input-bar" autocomplete="off">
+      <input id="input" type="text" placeholder="Ask Volchino…" autofocus>
+      <button id="mic-btn" type="button" title="Voice (Phase 4)" disabled>MIC</button>
+      <button id="send-btn" type="submit" title="Send">&gt;</button>
+    </form>
+  </div>
+
+  <script src="/avatar.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
