@@ -4,10 +4,12 @@ After=graphical-session.target
 
 [Service]
 Type=simple
+WorkingDirectory=%h/Allprojects/VoLchiNo
 ExecStart=%h/Allprojects/VoLchiNo/deploy/start.sh
 Restart=on-failure
 RestartSec=5
 Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=%h/Allprojects/VoLchiNo
 
 [Install]
 WantedBy=default.target

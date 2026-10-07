@@ -22,6 +22,9 @@ done
 
 # Load .env next to this script's parent (the repo root).
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$REPO_DIR"
+export PYTHONPATH="$REPO_DIR:${PYTHONPATH:-}"
+
 if [ -f "$REPO_DIR/.env" ]; then
     set -a
     # shellcheck disable=SC1091
