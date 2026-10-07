@@ -296,7 +296,7 @@ All values live in **`.env`** (see `.env.example`). Never store values here.
 - [ ] **Phase 3**: 10 deterministic Hyprland/Linux tools + SQLite audit log + alias map.
 - [ ] **Phase 4**: Voice loop: in-browser wake word → laptop Whisper → TTS to phone.
 - [ ] **Phase 5**: Groq cheap router + cache/skill layer.
-- [ ] **Phase 6**: Activity tracker + Obsidian daily report + R2 5-min backup.
+- [x] **Phase 6**: Activity tracker + Obsidian daily report + R2 5-min backup.
 - [ ] **Phase 7**: ADB automation (reconnect logic).
 - [ ] **Phase 8**: FLUX image + social drafting.
 

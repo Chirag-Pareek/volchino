@@ -22,6 +22,8 @@ class CyberCat {
     this.ctx = canvas.getContext('2d');
     this.state = 'sleeping';
     this.evolution = 'egg';
+    this.phoneActive = false;
+    this.phoneAction = '';
     this._frame = 0;
     this._animId = null;
     this._blink = 0;
@@ -31,6 +33,11 @@ class CyberCat {
   setState(state, evolution) {
     this.state = state || this.state;
     this.evolution = evolution || this.evolution;
+  }
+
+  setPhoneActive(active, action) {
+    this.phoneActive = !!active;
+    this.phoneAction = action || '';
   }
 
   start() { if (!this._animId) this._loop(); }
@@ -76,6 +83,7 @@ class CyberCat {
       if (feat.ears) this._drawEars(ctx);
       this._drawFace(ctx);
       if (feat.whiskers) this._drawWhiskers(ctx);
+      if (this.phoneActive) this._drawPhone(ctx);
     }
 
     ctx.restore();
@@ -235,7 +243,58 @@ class CyberCat {
     ctx.stroke();
   }
 
+  _drawPhone(ctx) {
+    const px = 28, py = -10, pw = 18, ph = 32, r = 3;
+    ctx.save();
+    // phone outer body
+    ctx.fillStyle = '#161b22';
+    ctx.strokeStyle = COLORS.accent;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(px + r, py);
+    ctx.lineTo(px + pw - r, py);
+    ctx.quadraticCurveTo(px + pw, py, px + pw, py + r);
+    ctx.lineTo(px + pw, py + ph - r);
+    ctx.quadraticCurveTo(px + pw, py + ph, px + pw - r, py + ph);
+    ctx.lineTo(px + r, py + ph);
+    ctx.quadraticCurveTo(px, py + ph, px, py + ph - r);
+    ctx.lineTo(px, py + r);
+    ctx.quadraticCurveTo(px, py, px + r, py);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // phone screen
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(px + 2, py + 4, pw - 4, ph - 9);
+
+    // screen pulse / activity dot
+    const pulse = Math.sin(this._frame * 0.1) > 0;
+    ctx.fillStyle = pulse ? COLORS.accent : COLORS.ok;
+    ctx.beginPath();
+    ctx.arc(px + pw / 2, py + ph / 2 - 2, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // home bar
+    ctx.fillStyle = COLORS.border;
+    ctx.fillRect(px + pw / 2 - 3, py + ph - 3.5, 6, 1.5);
+
+    // signal waves
+    const waveAlpha = (Math.sin(this._frame * 0.15) + 1) / 2;
+    ctx.strokeStyle = COLORS.accent;
+    ctx.globalAlpha = waveAlpha;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(px + pw / 2, py, 6, Math.PI * 1.2, Math.PI * 1.8);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(px + pw / 2, py, 9, Math.PI * 1.2, Math.PI * 1.8);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   _stateGlow() {
+    if (this.phoneActive) return COLORS.accent;
     return {
       sleeping: null, idle: null, listening: COLORS.accent,
       thinking: COLORS.warn, working: COLORS.accent,
@@ -244,6 +303,9 @@ class CyberCat {
   }
 
   _stateLabel() {
+    if (this.phoneActive) {
+      return '📱 [phone] ' + (this.phoneAction ? '>> ' + this.phoneAction : '>> working');
+    }
     return {
       sleeping: '~ sleeping', idle: null, listening: ')) listening',
       thinking: '.. thinking', working: '>> working',

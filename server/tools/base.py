@@ -99,11 +99,16 @@ class DryRunRunner:
         return None
 
 
+Broadcast = Callable[[dict[str, Any]], Awaitable[None]]
+
+
 @dataclass
 class ToolContext:
     settings: Settings
     runner: Runner
     db: aiosqlite.Connection
+    broadcast: Broadcast | None = None
+    adb: Any | None = None
 
 
 class NoArgs(BaseModel):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
@@ -13,16 +14,19 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from server import auth, db
+from server.android import AdbClient
 from server.audio import stt, tts
 from server.config import Settings
 from server.hub import Hub
 from server.llm.groq import GroqClient
+from server.obsidian import R2SyncBridge, schedule_daily_report_loop
 from server.pet import PetService
 from server.pipeline.cache import Cache
 from server.pipeline.executor import Executor
 from server.pipeline.pipeline import Pipeline
 from server.pipeline.router import GroqRouter
 from server.reasoning.opencode import OpenCodeReasoningClient
+from server.telemetry import ActivityTracker
 from server.tools import REGISTRY, DryRunRunner, SubprocessRunner, ToolContext
 
 log = logging.getLogger(__name__)
@@ -44,8 +48,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             sleep_after_s=settings.pet_sleep_after_s,
         )
         cache = Cache(database)
-        ctx = ToolContext(settings=settings, runner=runner, db=database)
+        adb_client = AdbClient(settings=settings, runner=runner, broadcast=hub.broadcast)
+        ctx = ToolContext(
+            settings=settings,
+            runner=runner,
+            db=database,
+            broadcast=hub.broadcast,
+            adb=adb_client,
+        )
         executor = Executor(REGISTRY, ctx)
+
+        if settings.adb_auto_reconnect and settings.adb_device_id:
+            adb_client.start_watchdog()
 
         groq_client: GroqClient | None = None
         if settings.groq_api_key:
@@ -63,23 +77,42 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             pet=pet,
         )
 
+        tracker = ActivityTracker(database, settings)
+        await tracker.start()
+
+        r2_sync = R2SyncBridge(settings)
+        await r2_sync.start()
+
+        report_task = asyncio.create_task(
+            schedule_daily_report_loop(database, settings),
+            name="daily_report_scheduler",
+        )
+
         state.update(
             db=database,
             hub=hub,
             pet=pet,
             pipeline=pipeline,
             runner=runner,
+            adb=adb_client,
             groq_client=groq_client,
+            tracker=tracker,
+            r2_sync=r2_sync,
         )
         app.state.volchino = state
         log.info(
-            "Volchino agent started (dry_run=%s, groq=%s, stt=%s, tts=%s)",
+            "Volchino agent started (dry_run=%s, groq=%s, stt=%s, tts=%s, adb=%s)",
             settings.dry_run,
             bool(groq_client),
             settings.stt_engine,
             settings.tts_engine,
+            settings.adb_device_id or "local/none",
         )
         yield
+        report_task.cancel()
+        await tracker.stop()
+        await r2_sync.stop()
+        await adb_client.stop_watchdog()
         await pet.close()
         if groq_client:
             await groq_client.aclose()

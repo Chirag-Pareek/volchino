@@ -88,10 +88,32 @@
       case 'transcript':
         addMsg('[you said] ' + msg.text, 'user');
         break;
+      case 'adb_status':
+        handleAdbStatus(msg);
+        break;
       case 'voice_response':
         addMsg(msg.text, 'bot', msg.tool);
         playVoiceResponse(msg);
         break;
+    }
+  }
+
+  function handleAdbStatus(msg) {
+    if (msg.status === 'executing') {
+      cat.setPhoneActive(true, msg.action);
+      cat.setState('working');
+    } else if (msg.status === 'success') {
+      cat.setState('success');
+      setTimeout(function () {
+        cat.setPhoneActive(false);
+      }, 2500);
+    } else if (msg.status === 'error') {
+      cat.setState('error');
+      setTimeout(function () {
+        cat.setPhoneActive(false);
+      }, 2500);
+    } else if (msg.status === 'connected') {
+      addMsg('📱 Phone connected (' + (msg.device || 'wireless') + ')', 'bot');
     }
   }
 

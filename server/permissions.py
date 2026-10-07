@@ -24,6 +24,12 @@ SAFE_WITHOUT_CONFIRMATION: frozenset[str] = frozenset(
         "obsidian:append_daily_log",
         "search:duckduckgo",
         "cache:read",
+        # Phase 7 — ADB Safe Actions (Set A)
+        "adb:open_app",
+        "adb:media_control",
+        "adb:set_volume",
+        "adb:get_notifications",
+        "adb:take_screenshot",
     }
 )
 
@@ -36,6 +42,8 @@ REQUIRES_USER_CONFIRMATION: frozenset[str] = frozenset(
         "system:run_arbitrary_shell",
         "git:push",
         "adb:uninstall_package",
+        "adb:reboot",
+        "adb:run_shell",
         "financial:any_transaction",
     }
 )

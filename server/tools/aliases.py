@@ -61,3 +61,38 @@ def resolve_app(name: str) -> str:
 def resolve_window_class(name: str) -> str:
     key = " ".join(name.lower().split())
     return WINDOW_CLASS_ALIASES.get(key, key)
+
+
+PHONE_APP_ALIASES: dict[str, str] = {
+    "youtube": "com.google.android.youtube",
+    "spotify": "com.spotify.music",
+    "music": "com.spotify.music",
+    "whatsapp": "com.whatsapp",
+    "chrome": "com.android.chrome",
+    "browser": "com.android.chrome",
+    "camera": "com.android.camera",
+    "settings": "com.android.settings",
+    "termux": "com.termux",
+    "maps": "com.google.android.apps.maps",
+    "google maps": "com.google.android.apps.maps",
+    "photos": "com.google.android.apps.photos",
+    "gallery": "com.google.android.apps.photos",
+    "clock": "com.google.android.deskclock",
+    "calendar": "com.google.android.calendar",
+    "telegram": "org.telegram.messenger",
+    "phone": "com.google.android.dialer",
+    "dialer": "com.google.android.dialer",
+    "messages": "com.google.android.apps.messaging",
+    "messaging": "com.google.android.apps.messaging",
+    "gmail": "com.google.android.gm",
+    "mail": "com.google.android.gm",
+    "calculator": "com.google.android.calculator",
+    "notes": "com.miui.notes",
+    "files": "com.google.android.documentsui",
+}
+
+
+def resolve_phone_app(name: str) -> str:
+    key = " ".join(name.lower().split())
+    return PHONE_APP_ALIASES.get(key, key)
+
