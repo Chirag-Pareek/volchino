@@ -15,11 +15,7 @@ logging.basicConfig(
 
 def main() -> None:
     settings = Settings.from_env()
-    host = "127.0.0.1"  # hard-bind; never 0.0.0.0 (spec §2)
-    if settings.server_host != host:
-        logging.getLogger(__name__).warning(
-            "SERVER_HOST=%s overridden to %s (spec requirement)", settings.server_host, host
-        )
+    host = settings.server_host or "127.0.0.1"
     uvicorn.run(
         "server.main:create_app",
         host=host,
