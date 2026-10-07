@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from server.tools import android, hyprland, memory_tools, system
+from server.tools import android, hyprland, image_tools, memory_tools, system
 from server.tools.base import (
     CmdResult,
     DryRunRunner,
@@ -15,7 +15,14 @@ from server.tools.base import (
 )
 
 REGISTRY: dict[str, Tool] = {
-    t.name: t for t in (*hyprland.TOOLS, *system.TOOLS, *memory_tools.TOOLS, *android.TOOLS)
+    t.name: t
+    for t in (
+        *hyprland.TOOLS,
+        *system.TOOLS,
+        *memory_tools.TOOLS,
+        *android.TOOLS,
+        *image_tools.TOOLS,
+    )
 }
 
 __all__ = [

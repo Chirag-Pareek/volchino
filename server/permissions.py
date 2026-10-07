@@ -30,6 +30,9 @@ SAFE_WITHOUT_CONFIRMATION: frozenset[str] = frozenset(
         "adb:set_volume",
         "adb:get_notifications",
         "adb:take_screenshot",
+        # Phase 8 — Image generation & Social drafting (Set A)
+        "image:generate",
+        "social:draft",
     }
 )
 

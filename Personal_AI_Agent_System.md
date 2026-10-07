@@ -298,7 +298,7 @@ All values live in **`.env`** (see `.env.example`). Never store values here.
 - [ ] **Phase 5**: Groq cheap router + cache/skill layer.
 - [x] **Phase 6**: Activity tracker + Obsidian daily report + R2 5-min backup.
 - [x] **Phase 7**: ADB automation (reconnect logic).
-- [ ] **Phase 8**: FLUX image + social drafting.
+- [x] **Phase 8**: FLUX image + social drafting.
 
 > [!TIP]
 > Prove the voice loop (Phase 4) before polishing the avatar or adding extra features.

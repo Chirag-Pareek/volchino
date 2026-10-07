@@ -171,6 +171,41 @@ RULES: list[Rule] = [
         ),
         lambda m: ToolCall("generate_daily_report"),
     ),
+    # ── Phase 8: FLUX Image Generation & Social Drafting (0 tokens) ──
+    (
+        re.compile(
+            r"(?:generate|create|make|draw) (?:an? )?image (?:of )?(?P<prompt>.+?)"
+            r"(?: in (?P<ratio>16:9|1:1))?$"
+        ),
+        lambda m: ToolCall(
+            "generate_image",
+            {
+                "prompt": m.group("prompt").strip(),
+                "aspect_ratio": m.group("ratio") or "1:1",
+            },
+        ),
+    ),
+    (
+        re.compile(
+            r"(?:draft|write|create) (?:a |an )?"
+            r"(?:(?:social )?post (?:for |on )?(?P<platform>x|twitter|linkedin)|"
+            r"(?P<platform2>x|twitter|linkedin) (?:social )?post)"
+            r"(?::|\s*-\s*|\s+)(?P<text>.+)$"
+        ),
+        lambda m: ToolCall(
+            "draft_social_post",
+            {
+                "platform": "x"
+                if (m.group("platform") or m.group("platform2")).lower() in ("x", "twitter")
+                else "linkedin",
+                "text": m.group("text").strip(),
+            },
+        ),
+    ),
+    (
+        re.compile(r"(?:draft|write|create) tweet(?::|\s*-\s*|\s+)(?P<text>.+)$"),
+        lambda m: ToolCall("draft_social_post", {"platform": "x", "text": m.group("text").strip()}),
+    ),
     (
         re.compile(r"git status(?: (?:of|for|in) (?P<repo>\S.*))?"),
         lambda m: ToolCall("get_git_status", {"repo": m.group("repo")} if m.group("repo") else {}),

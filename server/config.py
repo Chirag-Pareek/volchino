@@ -71,6 +71,10 @@ class Settings:
     adb_device_id: str = ""
     adb_port: int = 5555
     adb_auto_reconnect: bool = True
+    # Phase 8 — AI Image Generation & Social Formatting
+    flux_model: str = "@cf/black-forest-labs/flux-1-schnell"
+    flux_steps: int = 8
+    daily_img_limit: int = 5
 
     @classmethod
     def from_env(cls, env_file: str | os.PathLike[str] | None = None) -> Settings:
@@ -139,4 +143,8 @@ class Settings:
             adb_device_id=os.environ.get("ADB_DEVICE_ID", "").strip(),
             adb_port=_int("ADB_PORT", 5555),
             adb_auto_reconnect=auto_reconn,
+            flux_model=os.environ.get("FLUX_MODEL", "").strip()
+            or "@cf/black-forest-labs/flux-1-schnell",
+            flux_steps=min(max(_int("FLUX_STEPS", 8), 1), 8),
+            daily_img_limit=max(_int("DAILY_IMG_LIMIT", 5), 1),
         )

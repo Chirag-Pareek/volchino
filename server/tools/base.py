@@ -109,6 +109,7 @@ class ToolContext:
     db: aiosqlite.Connection
     broadcast: Broadcast | None = None
     adb: Any | None = None
+    image_gen: Any | None = None
 
 
 class NoArgs(BaseModel):
