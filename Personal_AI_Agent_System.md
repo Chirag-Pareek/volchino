@@ -291,11 +291,11 @@ All values live in **`.env`** (see `.env.example`). Never store values here.
 ## 11. Development Roadmap
 
 - [x] **Phase 0**: Architecture blueprint, R2 backup, Telegram bridge.
-- [ ] **Phase 1**: FastAPI server + WebSocket channel + Tailscale HTTPS + `systemd --user` service.
-- [ ] **Phase 2**: PWA (installable in Chrome) with Tamagotchi UI, WebSocket client, wake lock.
-- [ ] **Phase 3**: 10 deterministic Hyprland/Linux tools + SQLite audit log + alias map.
-- [ ] **Phase 4**: Voice loop: in-browser wake word → laptop Whisper → TTS to phone.
-- [ ] **Phase 5**: Groq cheap router + cache/skill layer.
+- [x] **Phase 1**: FastAPI server + WebSocket channel + Tailscale HTTPS + `systemd --user` service.
+- [x] **Phase 2**: PWA (installable in Chrome) with Tamagotchi UI, WebSocket client, wake lock.
+- [x] **Phase 3**: 10 deterministic Hyprland/Linux tools + SQLite audit log + alias map.
+- [x] **Phase 4**: Voice loop: in-browser wake word → laptop Whisper → TTS to phone.
+- [x] **Phase 5**: Groq cheap router + cache/skill layer.
 - [x] **Phase 6**: Activity tracker + Obsidian daily report + R2 5-min backup.
 - [x] **Phase 7**: ADB automation (reconnect logic).
 - [x] **Phase 8**: FLUX image + social drafting.
