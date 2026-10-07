@@ -41,7 +41,8 @@ RULES: list[Rule] = [
     # ── Phase 7: Wireless Phone / ADB deterministic rules (0 tokens) ──
     (
         re.compile(
-            r"(?:phone (?:media )?(?:play(?:/|\s*)pause|pause|play|resume|toggle)|"
+            r"(?:phone (?:media )?(?:play(?:/|\s*)pause|pause|play|resume|toggle)"
+            r"(?: (?:music|media))?|"
             r"(?:pause|play|resume|toggle) (?:the )?(?:phone )?music(?: on (?:the )?phone)?|"
             r"(?:pause|play|resume|toggle) (?:the )?(?:music|media) on (?:the )?phone|"
             r"(?:pause|play|resume) phone(?: music)?)"

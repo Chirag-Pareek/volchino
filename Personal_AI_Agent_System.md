@@ -297,7 +297,7 @@ All values live in **`.env`** (see `.env.example`). Never store values here.
 - [ ] **Phase 4**: Voice loop: in-browser wake word → laptop Whisper → TTS to phone.
 - [ ] **Phase 5**: Groq cheap router + cache/skill layer.
 - [x] **Phase 6**: Activity tracker + Obsidian daily report + R2 5-min backup.
-- [ ] **Phase 7**: ADB automation (reconnect logic).
+- [x] **Phase 7**: ADB automation (reconnect logic).
 - [ ] **Phase 8**: FLUX image + social drafting.
 
 > [!TIP]
